@@ -1,0 +1,166 @@
+<main class="main-shell">
+  <section class="chat-shell">
+    <div id="dialogue-empty" class="chat-empty"></div>
+
+    <div id="dialogue-detail" class="hidden chat-detail">
+      <div id="chat-content" class="chat-content">
+        <section id="dialogue-memory" class="dialogue-memory hidden is-collapsed" aria-live="polite">
+          <div class="dialogue-memory-head">
+            <div class="dialogue-memory-head-title">
+              <strong>本局记忆</strong>
+              <button
+                id="dialogue-memory-toggle-button"
+                type="button"
+                class="soft-button"
+              >
+                弹窗查看
+              </button>
+              <button id="dialogue-memory-copy-button" type="button" class="soft-button">复制摘要</button>
+            </div>
+            <small id="dialogue-memory-updated">刚刚更新</small>
+            <small id="dialogue-memory-copy-status" class="dialogue-memory-copy-status"></small>
+          </div>
+          <div id="dialogue-memory-body" class="dialogue-memory-body">
+            <div id="dialogue-scene-switcher" class="dialogue-scene-switcher hidden">
+              <div class="dialogue-scene-switcher-head">
+                <strong>中途转场</strong>
+                <small>切一张场景卡，再补一句转场提示，就能把这一幕顺手推过去。</small>
+              </div>
+              <p id="dialogue-live-scene-context" class="dialogue-live-scene-context hidden"></p>
+              <div id="dialogue-live-scene-shift-hint" class="dialogue-live-scene-shift-hint hidden">
+                <p id="dialogue-live-scene-shift-copy" class="dialogue-live-scene-shift-copy"></p>
+                <button id="dialogue-live-scene-shift-recommend" type="button" class="soft-button">顺手切到下一幕</button>
+              </div>
+              <div class="dialogue-scene-switcher-row">
+                <button id="dialogue-live-scene-recommend" type="button" class="soft-button">推荐下一幕</button>
+                <select id="dialogue-live-scene-card"></select>
+                <button id="dialogue-live-scene-apply" type="button" class="soft-button">切换场景</button>
+              </div>
+              <div id="dialogue-live-scene-recommendation" class="dialogue-live-scene-recommendation hidden"></div>
+              <textarea id="dialogue-live-scene-transition" rows="2" placeholder="例如：雨势更大，众人不得不转入花厅。"></textarea>
+              <p id="dialogue-live-scene-status" class="card-note"></p>
+              <div id="dialogue-scene-chain-suggestions" class="dialogue-scene-chain-suggestions hidden"></div>
+            </div>
+            <div id="dialogue-scene-timeline" class="dialogue-scene-timeline hidden"></div>
+            <section id="dialogue-state-overview" class="dialogue-state-overview hidden">
+              <div class="dialogue-state-overview-head">
+                <strong>本局状态</strong>
+                <small>这一拍推进到哪、谁在场、气氛往哪边偏，都收在这里。</small>
+              </div>
+              <div id="dialogue-state-pills" class="dialogue-state-pills"></div>
+              <div class="dialogue-state-grid">
+                <article class="dialogue-state-card">
+                  <span>当前在场</span>
+                  <div id="dialogue-state-present" class="dialogue-state-chip-list"></div>
+                </article>
+                <article class="dialogue-state-card">
+                  <span>暂时离场</span>
+                  <div id="dialogue-state-offstage" class="dialogue-state-chip-list is-muted"></div>
+                </article>
+                <article class="dialogue-state-card">
+                  <span>局势张力</span>
+                  <p id="dialogue-state-tension">这一拍的情绪和冲突会收在这里。</p>
+                </article>
+                <article class="dialogue-state-card">
+                  <span>角色快照</span>
+                  <div id="dialogue-state-characters" class="dialogue-state-mini-list"></div>
+                </article>
+                <article class="dialogue-state-card">
+                  <span>关系漂移</span>
+                  <div id="dialogue-state-relations" class="dialogue-state-mini-list"></div>
+                </article>
+                <article class="dialogue-state-card">
+                  <span>最近波动</span>
+                  <div id="dialogue-state-events" class="dialogue-state-mini-list"></div>
+                </article>
+              </div>
+            </section>
+            <div class="dialogue-memory-grid">
+              <article class="dialogue-memory-card">
+                <span>场景回顾</span>
+                <p id="dialogue-memory-recap">这局刚开场，回顾会在这里滚动更新。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>人物动向</span>
+                <p id="dialogue-memory-cast">人物发言次序会在这里收住。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>关系变化</span>
+                <p id="dialogue-memory-relation">关系线会在这里滚动提示。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>你的位置</span>
+                <p id="dialogue-memory-perspective">你当前的入场方式会在这里提示。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>当前场景框架</span>
+                <p id="dialogue-memory-scene">当前这幕的地点、气氛与推进方向会在这里提醒你。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>当前地点</span>
+                <p id="dialogue-memory-location">当前落点会在这里提醒你。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>当前同行</span>
+                <p id="dialogue-memory-companions">现在与你同场的人会在这里提醒你。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>待完成承诺</span>
+                <p id="dialogue-memory-commitments">还没收口的承诺或待推进事项会在这里提醒你。</p>
+              </article>
+              <article class="dialogue-memory-card">
+                <span>世界状态提示</span>
+                <p id="dialogue-memory-world">当前局势里的动作与情绪线会在这里提醒你。</p>
+              </article>
+            </div>
+            <div class="dialogue-memory-meta">
+              <span id="dialogue-memory-mode" class="dialogue-memory-mode">模式：未入场</span>
+              <span id="dialogue-memory-branch" class="dialogue-memory-branch hidden"></span>
+            </div>
+          </div>
+        </section>
+        <div id="dialogue-transcript" class="transcript"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer id="turn-stage" class="composer-shell hidden">
+    <div class="composer-card">
+      <div id="composer-vue-root" class="composer-vue-root hidden"></div>
+      <div id="observe-quick-replies" class="quick-reply-row hidden"></div>
+      <div id="observe-auto-row" class="observe-auto-row hidden">
+        <button id="observe-auto-toggle" type="button" class="soft-button">开启连续旁观</button>
+        <small id="observe-auto-status" class="observe-auto-status">关闭：每轮手动推进</small>
+      </div>
+      <div class="composer-main">
+        <div id="dialogue-message-kind" class="composer-kind-toggle" role="group" aria-label="输入类型">
+          <button type="button" class="kind-chip active" data-kind="dialogue">台词</button>
+          <button type="button" class="kind-chip" data-kind="narration">剧情推动</button>
+        </div>
+        <textarea id="dialogue-message" rows="2" placeholder="写一句你想让他们听见的话"></textarea>
+        <div class="composer-actions">
+          <button
+            id="suggest-turn-button"
+            type="button"
+            class="composer-icon-button"
+            aria-label="帮我续一句"
+            title="帮我续一句"
+          >
+            ✨
+          </button>
+          <button id="prepare-turn-button" type="button" class="send-button" aria-label="送出">送出</button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <dialog id="dialogue-send-error-modal" class="dialogue-send-error-modal" aria-labelledby="dialogue-send-error-title">
+    <form method="dialog" class="dialogue-send-error-card">
+      <h3 id="dialogue-send-error-title">发送失败</h3>
+      <p id="dialogue-send-error-text" class="dialogue-send-error-text"></p>
+      <div class="dialogue-send-error-actions">
+        <button type="submit" class="send-button">知道了</button>
+      </div>
+    </form>
+  </dialog>
+</main>

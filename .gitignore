@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# Local data & databases
+apps/api/data/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Node / frontend
+apps/web/dist/
+apps/web/node_modules/
+node_modules/
+.pnpm-store/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs
+*.log
+apps/api/*.log
+apps/web/*.log
+
+# Tooling / local indexes
+.codegraph/
+.design-export/
+.browser-*.png
+*-qa.png
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Windows artifacts
+nul
+apps/api/nul
+
+# Claude local settings (optional keep — ignore if machine-specific)
+# .claude/settings.local.json

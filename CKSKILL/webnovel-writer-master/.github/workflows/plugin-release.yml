@@ -1,0 +1,112 @@
+name: Plugin Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.claude-plugin/marketplace.json'
+      - 'webnovel-writer/.claude-plugin/plugin.json'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'releases/**'
+      - 'webnovel-writer/scripts/sync_plugin_version.py'
+      - 'webnovel-writer/scripts/validate_release_notes.py'
+      - 'webnovel-writer/scripts/validate_plugin_package.py'
+      - '.github/workflows/plugin-release.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Plugin version to release, for example 6.2.0. Leave empty to read plugin.json.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Resolve release version
+        id: release_version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version || '' }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
+          else
+            version="$(python -c 'import json; from pathlib import Path; print(json.loads(Path("webnovel-writer/.claude-plugin/plugin.json").read_text(encoding="utf-8"))["version"])')"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Release version: $version"
+
+      - name: Validate release metadata
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+        run: |
+          python webnovel-writer/scripts/sync_plugin_version.py \
+            --check \
+            --expected-version "$RELEASE_VERSION"
+
+      - name: Validate release notes
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+        run: |
+          python webnovel-writer/scripts/validate_release_notes.py \
+            --version "$RELEASE_VERSION"
+
+      - name: Validate plugin package
+        run: python webnovel-writer/scripts/validate_plugin_package.py
+
+      - name: Check release tag
+        id: release_tag
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+        run: |
+          if git ls-remote --exit-code --tags origin "v$RELEASE_VERSION" >/dev/null 2>&1; then
+            echo "Tag v$RELEASE_VERSION already exists"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag
+        if: steps.release_tag.outputs.exists != 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+        run: |
+          echo "Releasing commit $(git rev-parse HEAD) as v$RELEASE_VERSION"
+          git tag "v$RELEASE_VERSION"
+          git push origin "v$RELEASE_VERSION"
+
+      - name: Check GitHub Release
+        id: github_release
+        env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v$RELEASE_VERSION" >/dev/null 2>&1; then
+            echo "Release v$RELEASE_VERSION already exists"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.github_release.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.release_version.outputs.version }}
+          name: v${{ steps.release_version.outputs.version }}
+          body_path: releases/v${{ steps.release_version.outputs.version }}.md

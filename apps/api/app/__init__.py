@@ -1,0 +1,2 @@
+"""Nove API application package."""
+

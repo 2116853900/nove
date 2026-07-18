@@ -1,0 +1,235 @@
+from __future__ import annotations
+
+from pydantic import BaseModel, Field, field_validator
+
+
+class CreateRunRequest(BaseModel):
+    novel_name: str = Field(..., min_length=1)
+    novel_content_base64: str = Field(..., min_length=1)
+    characters: list[str] = Field(default_factory=list)
+    max_sentences: int = Field(default=120, ge=20, le=300)
+    max_chars: int = Field(default=50_000, ge=2_000, le=200_000)
+    auto_run: bool = Field(default=False)
+
+    @field_validator("characters")
+    @classmethod
+    def _validate_characters(cls, value: list[str]) -> list[str]:
+        if not value:
+            raise ValueError("characters must not be empty")
+        return value
+
+
+class RestartRunRequest(BaseModel):
+    characters: list[str] = Field(default_factory=list)
+    novel_name: str = Field(default="")
+    novel_content_base64: str = Field(default="")
+    max_sentences: int = Field(default=120, ge=20, le=300)
+    max_chars: int = Field(default=50_000, ge=2_000, le=200_000)
+
+
+class SuggestRedistillSegmentsRequest(BaseModel):
+    character: str = Field(..., min_length=1)
+    max_segments: int = Field(default=3, ge=1, le=8)
+
+
+class SaveModelSettingsRequest(BaseModel):
+    provider: str = Field(..., min_length=1)
+    model: str = Field(..., min_length=1)
+    base_url: str = Field(default="")
+    api_key: str = Field(default="")
+    max_tokens: int = Field(default=0, ge=0, le=16000)
+
+
+class IngestCharacterRequest(BaseModel):
+    character: str = Field(..., min_length=1)
+    content_base64: str = Field(..., min_length=1)
+    filename: str = Field(default="PROFILE.generated.md")
+
+
+class IngestRelationRequest(BaseModel):
+    content_base64: str = Field(..., min_length=1)
+    filename: str = Field(default="relations.md")
+
+
+class ImportRunPackageRequest(BaseModel):
+    filename: str = Field(..., min_length=1)
+    content_base64: str = Field(..., min_length=1)
+
+
+class SavePersonaReviewRequest(BaseModel):
+    core_identity: str = Field(default="")
+    story_role: str = Field(default="")
+    identity_anchor: str = Field(default="")
+    temperament_type: str = Field(default="")
+    soul_goal: str = Field(default="")
+    hidden_desire: str = Field(default="")
+    inner_conflict: str = Field(default="")
+    self_cognition: str = Field(default="")
+    private_self: str = Field(default="")
+    speech_style: str = Field(default="")
+    cadence: str = Field(default="")
+    typical_lines: str = Field(default="")
+    signature_phrases: str = Field(default="")
+    sentence_openers: str = Field(default="")
+    sentence_endings: str = Field(default="")
+    social_mode: str = Field(default="")
+    thinking_style: str = Field(default="")
+    decision_rules: str = Field(default="")
+    reward_logic: str = Field(default="")
+    worldview: str = Field(default="")
+    belief_anchor: str = Field(default="")
+    moral_bottom_line: str = Field(default="")
+    restraint_threshold: str = Field(default="")
+    core_traits: str = Field(default="")
+    key_bonds: str = Field(default="")
+    forbidden_behaviors: str = Field(default="")
+    stress_response: str = Field(default="")
+    emotion_model: str = Field(default="")
+    anger_style: str = Field(default="")
+    joy_style: str = Field(default="")
+    grievance_style: str = Field(default="")
+    others_impression: str = Field(default="")
+    review_source: str = Field(default="")
+    review_note: str = Field(default="")
+
+
+class SuggestPersonaFieldRequest(BaseModel):
+    field: str = Field(..., min_length=1)
+
+
+class SessionRef(BaseModel):
+    run_id: str = Field(..., min_length=1)
+    session_id: str = Field(..., min_length=1)
+
+
+class DeleteSessionsRequest(BaseModel):
+    items: list[SessionRef] = Field(..., min_length=1)
+
+
+class UpdateRelationDetailRequest(BaseModel):
+    trust: int | None = Field(default=None, ge=0, le=10)
+    affection: int | None = Field(default=None, ge=0, le=10)
+    hostility: int | None = Field(default=None, ge=0, le=10)
+    ambiguity: int | None = Field(default=None, ge=0, le=10)
+    relationship_type: str = Field(default="")
+    relation_change: str = Field(default="")
+    conflict_point: str = Field(default="")
+    typical_interaction: str = Field(default="")
+
+
+class CreateDialogueSessionRequest(BaseModel):
+    mode: str = Field(...)
+    participants: list[str] = Field(default_factory=list)
+    controlled_character: str = Field(default="")
+    scene_card_id: str = Field(default="")
+    scene_profile: dict[str, str] = Field(default_factory=dict)
+    self_card_id: str = Field(default="")
+    self_profile: dict[str, str] = Field(default_factory=dict)
+
+
+class SaveSceneCardRequest(BaseModel):
+    title: str = Field(default="")
+    time_hint: str = Field(default="")
+    location: str = Field(default="")
+    atmosphere: str = Field(default="")
+    opening_situation: str = Field(default="")
+    public_goal: str = Field(default="")
+    hidden_tension: str = Field(default="")
+    scene_drive: str = Field(default="")
+    expected_rhythm: str = Field(default="")
+    forbidden_topics: str = Field(default="")
+
+
+class RecommendSceneCardRequest(BaseModel):
+    mode: str = Field(default="observe")
+    participants: list[str] = Field(default_factory=list)
+
+
+class SaveOpeningPresetRequest(BaseModel):
+    title: str = Field(default="")
+    note: str = Field(default="")
+    mode: str = Field(default="observe")
+    participants: list[str] = Field(default_factory=list)
+    controlled_character: str = Field(default="")
+    scene_card_id: str = Field(default="")
+    scene_card: dict[str, object] = Field(default_factory=dict)
+    self_card_id: str = Field(default="")
+    self_card: dict[str, object] = Field(default_factory=dict)
+    self_name: str = Field(default="")
+    self_identity: str = Field(default="")
+    self_style: str = Field(default="")
+
+
+class SaveSelfCardRequest(BaseModel):
+    display_name: str = Field(default="")
+    scene_identity: str = Field(default="")
+    interaction_style: str = Field(default="")
+    core_identity: str = Field(default="")
+    story_role: str = Field(default="")
+    identity_anchor: str = Field(default="")
+    temperament_type: str = Field(default="")
+    soul_goal: str = Field(default="")
+    hidden_desire: str = Field(default="")
+    inner_conflict: str = Field(default="")
+    self_cognition: str = Field(default="")
+    private_self: str = Field(default="")
+    speech_style: str = Field(default="")
+    cadence: str = Field(default="")
+    typical_lines: str = Field(default="")
+    signature_phrases: str = Field(default="")
+    sentence_openers: str = Field(default="")
+    sentence_endings: str = Field(default="")
+    social_mode: str = Field(default="")
+    thinking_style: str = Field(default="")
+    decision_rules: str = Field(default="")
+    reward_logic: str = Field(default="")
+    worldview: str = Field(default="")
+    belief_anchor: str = Field(default="")
+    moral_bottom_line: str = Field(default="")
+    restraint_threshold: str = Field(default="")
+    core_traits: str = Field(default="")
+    key_bonds: str = Field(default="")
+    forbidden_behaviors: str = Field(default="")
+    stress_response: str = Field(default="")
+    emotion_model: str = Field(default="")
+    anger_style: str = Field(default="")
+    joy_style: str = Field(default="")
+    grievance_style: str = Field(default="")
+    others_impression: str = Field(default="")
+
+
+class PrepareDialogueTurnRequest(BaseModel):
+    message: str = Field(..., min_length=1)
+    message_kind: str = Field(default="dialogue")
+    suppress_transcript_message: bool = Field(default=False)
+
+
+class SuggestDialogueTurnRequest(BaseModel):
+    seed_text: str = Field(default="")
+
+
+class SwitchDialogueSceneCardRequest(BaseModel):
+    scene_card_id: str = Field(default="")
+    scene_profile: dict[str, str] = Field(default_factory=dict)
+    transition_message: str = Field(default="")
+    auto_continue: bool = Field(default=False)
+
+
+class BranchDialogueSessionRequest(BaseModel):
+    scene_index: int = Field(default=0, ge=0)
+
+
+class DialogueResponseItem(BaseModel):
+    speaker: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1)
+
+
+class IngestDialogueTurnRequest(BaseModel):
+    responses: list[DialogueResponseItem] = Field(default_factory=list)
+
+    @field_validator("responses")
+    @classmethod
+    def _validate_responses(cls, value: list[DialogueResponseItem]) -> list[DialogueResponseItem]:
+        if not value:
+            raise ValueError("responses must not be empty")
+        return value

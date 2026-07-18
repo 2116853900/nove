@@ -1,0 +1,307 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens — docs/04-UI-DESIGN.md §5.1.
+ * Light mode is the source of truth for the exported screens.
+ * Dark mode is wired but not toggled in this build.
+ */
+:root {
+  --color-background: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f0f2f4;
+  --color-text-primary: #20242a;
+  --color-text-secondary: #5b6470;
+  --color-border: #d9dee5;
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-info: #2563eb;
+  --color-warning: #b45309;
+  --color-danger: #b42318;
+  --color-success: #15803d;
+  --color-twist: #7c3aed;
+  --color-highlight: #c2410c;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-panel: 200ms;
+  --duration-modal: 240ms;
+}
+
+.dark {
+  --color-background: #17191d;
+  --color-surface: #202329;
+  --color-surface-subtle: #282c33;
+  --color-text-primary: #f1f3f5;
+  --color-text-secondary: #b6bdc7;
+  --color-border: #3a4049;
+  --color-primary: #5eead4;
+  --color-primary-hover: #99f6e4;
+  --color-info: #93c5fd;
+  --color-warning: #fbbf24;
+  --color-danger: #fda29b;
+  --color-success: #86efac;
+  --color-twist: #7c3aed;
+  --color-highlight: #c2410c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: Inter, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Respect reduced-motion preference (§19) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Thin, quiet scrollbars so panels stay calm during long sessions */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Focus ring — visible for keyboard users (§20) */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* —— Motion system (transform + opacity only, §19) —— */
+@keyframes nove-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+@keyframes nove-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes nove-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes nove-fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes nove-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes nove-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes nove-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes nove-tab-indicator {
+  from { transform: scaleX(0.6); opacity: 0.5; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+@keyframes nove-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-nove-pulse {
+  animation: nove-pulse 1.4s ease-in-out infinite;
+}
+.animate-nove-fade-in {
+  animation: nove-fade-in var(--duration-panel) var(--ease-soft) both;
+}
+.animate-nove-fade-up {
+  animation: nove-fade-up var(--duration-panel) var(--ease-out) both;
+}
+.animate-nove-fade-down {
+  animation: nove-fade-down var(--duration-fast) var(--ease-out) both;
+}
+.animate-nove-slide-in-right {
+  animation: nove-slide-in-right var(--duration-panel) var(--ease-out) both;
+}
+.animate-nove-slide-in-left {
+  animation: nove-slide-in-left var(--duration-panel) var(--ease-out) both;
+}
+.animate-nove-pop {
+  animation: nove-pop var(--duration-modal) var(--ease-out) both;
+}
+.animate-nove-tab-indicator {
+  animation: nove-tab-indicator var(--duration-fast) var(--ease-out) both;
+  transform-origin: center bottom;
+}
+
+.nove-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-subtle) 25%,
+    color-mix(in srgb, var(--color-border) 55%, white) 50%,
+    var(--color-surface-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: nove-shimmer 1.6s var(--ease-soft) infinite;
+}
+
+.nove-panel-enter {
+  animation: nove-slide-in-right var(--duration-panel) var(--ease-out) both;
+}
+.nove-panel-enter-left {
+  animation: nove-slide-in-left var(--duration-panel) var(--ease-out) both;
+}
+.nove-page-enter {
+  animation: nove-fade-up var(--duration-modal) var(--ease-out) both;
+}
+
+.nove-interactive {
+  transition:
+    background-color var(--duration-fast) var(--ease-soft),
+    border-color var(--duration-fast) var(--ease-soft),
+    color var(--duration-fast) var(--ease-soft),
+    box-shadow var(--duration-fast) var(--ease-soft),
+    transform var(--duration-fast) var(--ease-soft),
+    opacity var(--duration-fast) var(--ease-soft);
+}
+.nove-interactive:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.nove-control:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.nove-editor,
+.nove-rich-text {
+  min-height: calc(100vh - 230px);
+  line-height: 1.9;
+}
+
+.nove-editor p,
+.nove-rich-text p {
+  margin: 0 0 1.25em;
+}
+
+.nove-audit-rewrite-anchor {
+  display: block;
+  width: 100%;
+  margin: 0.75rem 0 1.5rem;
+  white-space: normal;
+}
+
+.nove-audit-rewrite-card {
+  width: 100%;
+  line-height: 1.5;
+  user-select: text;
+}
+
+.nove-editor h1,
+.nove-editor h2,
+.nove-editor h3,
+.nove-rich-text h1,
+.nove-rich-text h2,
+.nove-rich-text h3 {
+  margin: 0 0 1.4em;
+  color: var(--color-text-primary);
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.nove-editor h1,
+.nove-rich-text h1 {
+  font-size: 1.75em;
+}
+
+.nove-editor h2,
+.nove-rich-text h2 {
+  font-size: 1.45em;
+}
+
+.nove-editor h3,
+.nove-rich-text h3 {
+  font-size: 1.2em;
+}
+
+.nove-stream-caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 1.05em;
+  margin-left: 0.08em;
+  vertical-align: -0.12em;
+  background: currentColor;
+  animation: nove-stream-caret 0.8s steps(1, end) infinite;
+}
+
+@keyframes nove-stream-caret {
+  50% { opacity: 0; }
+}
+
+.nove-editor p.is-editor-empty:first-child::before {
+  color: var(--color-text-secondary);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

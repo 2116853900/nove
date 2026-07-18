@@ -1,0 +1,44 @@
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Tooling/cache
+.codegraph/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+.zaomeng-web/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+
+# Local runtime/config artifacts
+config.yaml
+data/*
+!data/characters/
+!data/relations/
+!data/sessions/
+!data/corrections/
+data/characters/*
+data/relations/*
+data/sessions/*
+data/corrections/*
+!data/characters/.gitkeep
+!data/relations/.gitkeep
+!data/sessions/.gitkeep
+!data/corrections/.gitkeep
+logs/
+outputs/
+clawhub-zaomeng-skill/runtime/data/
+.tools/
