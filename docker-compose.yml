@@ -2,11 +2,12 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: nove
-      POSTGRES_USER: nove
-      POSTGRES_PASSWORD: nove
+      POSTGRES_DB: ${POSTGRES_DB:-nove}
+      POSTGRES_USER: ${POSTGRES_USER:-nove}
+      # Override in production: set POSTGRES_PASSWORD in a local .env (gitignored)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nove}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nove -d nove"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,9 +24,14 @@ services:
   api:
     build: ./apps/api
     environment:
-      DATABASE_URL: postgresql+psycopg://nove:nove@postgres:5432/nove
-      QDRANT_URL: http://qdrant:6333
-      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://nove:nove@postgres:5432/nove}
+      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      API_KEY: ${API_KEY:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      SECRET_KEY: ${SECRET_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

@@ -25,6 +25,14 @@ node_modules/
 .env.*
 !.env.example
 *.local
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+*.p12
+*.pfx
+credentials.json
+service-account*.json
 
 # Logs
 *.log
@@ -37,6 +45,11 @@ apps/web/*.log
 .browser-*.png
 *-qa.png
 
+# Local skill / agent state
+**/config.env
+**/.claude/settings.local.json
+**/taskmaster-costs.json
+
 # OS / editor
 .DS_Store
 Thumbs.db
@@ -48,6 +61,3 @@ Thumbs.db
 # Windows artifacts
 nul
 apps/api/nul
-
-# Claude local settings (optional keep — ignore if machine-specific)
-# .claude/settings.local.json
