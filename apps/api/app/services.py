@@ -20,7 +20,7 @@ from .agents import (
     plan_scene_beats,
     run_continuity_skill,
 )
-from .agents.style import AgentScopeStyleAgent, heuristic_selection_edit
+from .agents.style import AgentScopeStyleAgent
 from .agents.auditor import attach_evidence_metadata
 from .craft import (
     CKSKILL_RULESET_VERSION,
@@ -63,47 +63,6 @@ from .security import decrypt_secret
 
 def utc_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-class LocalWritingModel:
-    """Deterministic development adapter; production providers implement the same port."""
-
-    name = "Nove Local Draft"
-
-    def generate(
-        self,
-        *,
-        title: str,
-        brief: dict,
-        existing_content: str,
-        on_delta: Callable[[str], None] | None = None,
-    ) -> str:
-        goal = brief.get("goal") or "推动当前冲突，并让人物作出新的选择"
-        conflict = brief.get("conflict") or "有限的信息与迫近的时间相互挤压"
-        must_events = brief.get("must_events") or ["人物发现一个改变判断的新线索"]
-        hook = brief.get("hook") or "门外传来三下本不该出现的敲击声"
-        must_preserve = [item for item in brief.get("must_preserve", []) if item]
-        event_text = "；".join(must_events)
-        operation = str(brief.get("_operation") or "")
-        opening = existing_content.strip() if operation == "CONTINUE_CHAPTER" else ""
-        if opening:
-            opening += "\n\n"
-        draft = (
-            f"{opening}## {title}\n\n"
-            f"天色还没有完全亮，空气里已经有了某种逼近的意味。{goal}。"
-            f"所有人都清楚眼前的难题：{conflict}。\n\n"
-            f"他们没有立刻争论。短暂的沉默里，{event_text}。这个变化没有替任何人作出决定，"
-            "却让原本稳固的判断出现了一道缝隙。\n\n"
-            "有人试图把话说得轻松，声音落下时却无人回应。每个人都在计算代价，也都知道拖延本身就是一种选择。"
-            "最终，最先迈出那一步的人没有回头。\n\n"
-            f"事情看似暂时平息，{hook}。"
-        )
-        missing = [item for item in must_preserve if item not in draft]
-        if missing:
-            draft += "\n\n" + "\n\n".join(missing)
-        if on_delta is not None:
-            on_delta(draft)
-        return draft
 
 
 class OpenAICompatibleWritingModel:
@@ -1666,19 +1625,20 @@ class SelectionEditService:
         if config is None:
             config = model_config_for_role(self.session, chapter.novel_id, "写作")
 
-        model_name = "Nove Local Style"
+        if config is None:
+            raise ValueError("请先为本项目连接可用的云端写作模型。")
+        model_name = config.name
         with track_agent_call(
             self.session,
             novel_id=chapter.novel_id,
             chapter_id=chapter.id,
             agent_name="Style",
-            model_name=config.name if config else model_name,
+            model_name=config.name,
             operation=operation,
             input_summary=selected_text[:120],
         ) as meta:
             try:
-                if config is not None:
-                    candidate = AgentScopeStyleAgent(config).edit_selection(
+                candidate = AgentScopeStyleAgent(config).edit_selection(
                         operation=operation,
                         selected_text=selected_text,
                         before=before,
@@ -1686,20 +1646,8 @@ class SelectionEditService:
                         instruction=instruction,
                         context=context,
                     )
-                    model_name = config.name
-                else:
-                    candidate = heuristic_selection_edit(
-                        operation=operation,
-                        selected_text=selected_text,
-                        instruction=instruction,
-                    )
-            except Exception:
-                candidate = heuristic_selection_edit(
-                    operation=operation,
-                    selected_text=selected_text,
-                    instruction=instruction,
-                )
-                model_name = "Nove Local Style"
+            except Exception as exc:
+                raise ValueError("云端模型未能完成局部修改，请检查连接后重试。") from exc
             meta["output_summary"] = candidate[:200]
 
         merged = before + candidate + after

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import func, or_, select
+from urllib.parse import urlparse
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .models import (
@@ -36,17 +38,19 @@ SAMPLE_CONTENT = """信标坠入大气层时，林远正站在观测台的落地
 
 def ensure_workspace_model_library(session: Session, workspace_id: str = "local") -> None:
     """Remove the retired local text model from workspace and novel scopes."""
-    local_models = session.scalars(
+    candidates = session.scalars(
         select(ModelConfig).where(
             ModelConfig.workspace_id == workspace_id,
-            or_(
-                ModelConfig.provider.in_(["本地", "local", "Ollama", "vLLM"]),
-                ModelConfig.model_id == "nove-local",
-            ),
         )
     ).all()
-    for model in local_models:
-        session.delete(model)
+    for model in candidates:
+        hostname = (urlparse(model.base_url or "").hostname or "").lower()
+        if (
+            model.provider in {"本地", "local", "Ollama", "vLLM"}
+            or model.model_id == "nove-local"
+            or hostname in {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
+        ):
+            session.delete(model)
 
 
 def ensure_seed_data(session: Session, *, demo: bool = False) -> None:

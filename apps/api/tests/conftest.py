@@ -16,15 +16,37 @@ from app.agents import outline as outline_module
 from app.agents.blueprint import AgentScopeBlueprintAgent, heuristic_blueprint
 from app.agents.outline import heuristic_outline_children
 from app.agents.skills_runtime import SkillRuntime
+from app.agents.style import AgentScopeStyleAgent, heuristic_selection_edit
 from app.agents.writer import AgentScopeWriter
 from app.db import Base
 from app.models import ModelConfig
 from app.seed import ensure_seed_data
-from app.services import LocalWritingModel
 
 
 _ORIGINAL_OUTLINE_AGENT = outline_module.AgentScopeOutlineAgent
 _ORIGINAL_OUTLINE_SKILL = SkillRuntime._outline_generate
+
+
+class TestWritingModel:
+    name = "Test Cloud Double"
+
+    def generate(self, *, title, brief, existing_content, on_delta=None):
+        goal = brief.get("goal") or "推动当前冲突"
+        conflict = brief.get("conflict") or "时间与信息都不足"
+        events = "；".join(brief.get("must_events") or ["人物发现新线索"])
+        hook = brief.get("hook") or "门外传来不该出现的敲门声"
+        opening = existing_content.strip() if brief.get("_operation") == "CONTINUE_CHAPTER" else ""
+        text = (
+            (opening + "\n\n" if opening else "")
+            + f"## {title}\n\n{goal}。眼前的阻力是：{conflict}。\n\n{events}。"
+            + f"局面因此发生改变。\n\n{hook}。"
+        )
+        for item in brief.get("must_preserve") or []:
+            if item and item not in text:
+                text += "\n\n" + item
+        if on_delta is not None:
+            on_delta(text)
+        return text
 
 
 @pytest.fixture()
@@ -107,7 +129,16 @@ def session(monkeypatch: pytest.MonkeyPatch) -> Session:
         monkeypatch.setattr(
             AgentScopeWriter,
             "generate",
-            lambda self, **kwargs: LocalWritingModel().generate(**kwargs),
+            lambda self, **kwargs: TestWritingModel().generate(**kwargs),
+        )
+        monkeypatch.setattr(
+            AgentScopeStyleAgent,
+            "edit_selection",
+            lambda self, **kwargs: heuristic_selection_edit(
+                operation=kwargs["operation"],
+                selected_text=kwargs["selected_text"],
+                instruction=kwargs.get("instruction", ""),
+            ),
         )
         yield db
     Base.metadata.drop_all(engine)

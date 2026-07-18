@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import urlparse
 
 from sqlalchemy import case, or_, select
 from sqlalchemy.orm import Session
@@ -30,8 +31,15 @@ def model_config_for_role(session: Session, novel_id: str, role: str) -> ModelCo
     for config in configs:
         if config.novel_id is None and workspace_id and config.workspace_id != workspace_id:
             continue
+        hostname = (urlparse(config.base_url or "").hostname or "").lower()
+        if not config.base_url or hostname in {"localhost", "127.0.0.1", "0.0.0.0", "::1"}:
+            continue
         roles = config.roles or []
-        if (role in roles or (config.novel_id is None and not roles)) and config.provider not in {
+        workspace_default_role = config.novel_id is None and not roles and role in {
+            "大纲",
+            "写作",
+        }
+        if (role in roles or workspace_default_role) and config.provider not in {
             "本地",
             "local",
             "Ollama",
@@ -56,7 +64,7 @@ def build_chat_model(config: ModelConfig, *, stream: bool = False) -> Any:
     if not config.base_url:
         raise ValueError(f"模型 {config.name} 未配置 Base URL")
 
-    api_key = decrypt_secret(config.encrypted_api_key) or "nove-local-key"
+    api_key = decrypt_secret(config.encrypted_api_key) or "nove-cloud-key"
     credential = OpenAICredential(
         api_key=api_key,
         base_url=config.base_url.rstrip("/"),
