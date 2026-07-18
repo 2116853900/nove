@@ -127,7 +127,7 @@ export function NewNovelStep1() {
           <div>
             <h2 className="text-[18px] font-semibold text-text-primary">先连接云端模型</h2>
             <p className="mt-1 text-[13px] leading-relaxed text-text-secondary">
-              Nove 不会在无模型时生成本地草案。连接成功后，故事设定和章节都由这个模型完成。
+              Nove 只使用已连接的云端模型。连接成功后，故事设定和章节都由这个模型完成。
             </p>
           </div>
         </div>

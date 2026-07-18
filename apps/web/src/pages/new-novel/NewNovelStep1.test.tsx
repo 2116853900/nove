@@ -54,7 +54,7 @@ describe("new novel wizard", () => {
     });
 
     expect(container.textContent).toContain("先连接云端模型");
-    expect(container.textContent).toContain("不会在无模型时生成本地草案");
+    expect(container.textContent).toContain("只使用已连接的云端模型");
     expect(container.querySelector("textarea[name='core_idea']")).toBeNull();
     expect(container.querySelectorAll("[required]")).toHaveLength(2);
     const next = [...container.querySelectorAll("button")].find(
